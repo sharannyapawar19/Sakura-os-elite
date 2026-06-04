@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sakura OS Next</title>
+<style>
+body{font-family:system-ui;margin:0;background:#fff7fb;color:#333}
+.header{padding:25px;text-align:center;background:#ffe6f0}
+.page{display:none;padding:15px}
+.active{display:block}
+.card{background:white;border-radius:16px;padding:15px;margin:10px 0;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.homebtn{padding:25px;border-radius:18px;background:white;text-align:center;font-size:20px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+input,textarea,select{width:100%;padding:10px;margin:6px 0;box-sizing:border-box}
+button{background:#ffd6e7;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
+.star{cursor:pointer;font-size:24px}
+.back{margin-bottom:10px}
+.done{text-decoration:line-through;opacity:.6}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>🌸 Sakura OS</h1>
+<p>Japan Opportunity Edition</p>
+</div>
+
+<div id="home" class="page active">
+<div class="grid">
+<div class="homebtn" onclick="openPage('people')">🤝<br>People</div>
+<div class="homebtn" onclick="openPage('ideas')">💡<br>Opportunities</div>
+<div class="homebtn" onclick="openPage('money')">💴<br>Money</div>
+<div class="homebtn" onclick="openPage('journal')">📝<br>Journal</div>
+<div class="homebtn" onclick="openPage('bucket')">🌸<br>Bucket List</div>
+</div>
+</div>
+
+<div id="people" class="page">
+<button class="back" onclick="openPage('home')">← Home</button>
+<div class="card">
+<h3>🤝 Add Person</h3>
+<input id="pname" placeholder="Name">
+<input id="pfield" placeholder="Field">
+<textarea id="pdesc" placeholder="Description"></textarea>
+<input id="ppoc" placeholder="Instagram / LinkedIn">
+<div>Importance:
+<span class="star" onclick="setStars(1)">⭐</span>
+<span class="star" onclick="setStars(2)">⭐</span>
+<span class="star" onclick="setStars(3)">⭐</span>
+<span class="star" onclick="setStars(4)">⭐</span>
+<span class="star" onclick="setStars(5)">⭐</span>
+</div>
+<button onclick="addPerson()">Save</button>
+</div>
+<div id="peopleList"></div>
+</div>
+
+<div id="ideas" class="page">
+<button class="back" onclick="openPage('home')">← Home</button>
+<div class="card">
+<h3>💡 Add Opportunity</h3>
+<input id="iname" placeholder="Idea / Product">
+<input id="img" type="file" accept="image/*">
+<label>Potential</label><input id="ipot" type="range" min="1" max="10" value="5">
+<label>Difficulty</label><input id="idiff" type="range" min="1" max="10" value="5">
+<label>Excitement</label><input id="iexc" type="range" min="1" max="10" value="5">
+<textarea id="inotes" placeholder="Notes"></textarea>
+<button onclick="addIdea()">Save</button>
+</div>
+<div id="ideaList"></div>
+</div>
+
+<div id="money" class="page">
+<button class="back" onclick="openPage('home')">← Home</button>
+<div class="card">
+<h3>💴 Expense Tracker</h3>
+<input id="budget" type="number" placeholder="Budget INR" value="70000">
+<input id="rate" type="number" value="0.58" step="0.01">
+<input id="day" placeholder="Day (16,17,18...)">
+<select id="cat">
+<option>Food</option>
+<option>Clothes</option>
+<option>Skincare</option>
+<option>TO SELL</option>
+<option>Other</option>
+</select>
+<input id="edesc" placeholder="Name / Description">
+<input id="inr" type="number" placeholder="₹ INR">
+<input id="jpy" type="number" placeholder="¥ JPY">
+<button onclick="addExpense()">Add Expense</button>
+</div>
+<div id="moneySummary" class="card"></div>
+<div id="expenseList"></div>
+</div>
+
+<div id="journal" class="page">
+<button class="back" onclick="openPage('home')">← Home</button>
+<div class="card">
+<input id="jbest" placeholder="Best moment today">
+<input id="jperson" placeholder="New person met">
+<input id="jidea" placeholder="New idea discovered">
+<input id="jbetter" placeholder="Japan does better">
+<input id="japply" placeholder="Apply in my life">
+<button onclick="addJournal()">Save Journal</button>
+</div>
+<div id="journalList"></div>
+</div>
+
+<div id="bucket" class="page">
+<button class="back" onclick="openPage('home')">← Home</button>
+<div class="card">
+<input id="bitem" placeholder="Bucket list item">
+<button onclick="addBucket()">Add</button>
+</div>
+<div id="bucketList"></div>
+</div>
+
+<script>
+let starVal=3;
+function openPage(id){
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+function get(k){return JSON.parse(localStorage.getItem(k)||'[]')}
+function set(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function setStars(n){starVal=n}
+
+function addPerson(){
+let a=get('people');
+a.push({n:pname.value,f:pfield.value,d:pdesc.value,p:ppoc.value,s:starVal});
+set('people',a);render();
+}
+function addIdea(){
+let a=get('ideas');
+a.push({n:iname.value,p:ipot.value,d:idiff.value,e:iexc.value});
+set('ideas',a);render();
+}
+function addExpense(){
+let r=Number(rate.value||0.58);
+let iv=Number(inr.value||0), jv=Number(jpy.value||0);
+if(iv&&!jv) jv=Math.round(iv/r);
+if(jv&&!iv) iv=Math.round(jv*r);
+let a=get('exp');
+a.push({date:day.value+'/06/2026',cat:cat.value,desc:edesc.value,inr:iv,jpy:jv});
+set('exp',a);render();
+}
+function addJournal(){
+let a=get('journal'); a.push({best:jbest.value,person:jperson.value,idea:jidea.value}); set('journal',a); render();
+}
+function addBucket(){
+let a=get('bucket'); a.push({t:bitem.value,d:false}); set('bucket',a); render();
+}
+function toggleBucket(i){
+let a=get('bucket'); a[i].d=!a[i].d; set('bucket',a); render();
+}
+function render(){
+peopleList.innerHTML=get('people').map(x=>`<div class="card"><b>${x.n}</b><br>${x.f}<br>${'⭐'.repeat(x.s)}<br>${x.d}<br>${x.p}</div>`).join('');
+ideaList.innerHTML=get('ideas').map(x=>`<div class="card"><b>${x.n}</b><br>Potential ${x.p}/10 | Difficulty ${x.d}/10 | Excitement ${x.e}/10</div>`).join('');
+let ex=get('exp');
+let ti=ex.reduce((s,x)=>s+x.inr,0), tj=ex.reduce((s,x)=>s+x.jpy,0);
+moneySummary.innerHTML=`<b>Spent:</b> ₹${ti} | ¥${tj}<br><b>Remaining:</b> ₹${(Number(budget.value||0)-ti)}`;
+expenseList.innerHTML=ex.map(x=>`<div class="card">${x.date}<br>${x.cat}<br>${x.desc}<br>₹${x.inr} | ¥${x.jpy}</div>`).join('');
+journalList.innerHTML=get('journal').map(x=>`<div class="card">${x.best}<br>${x.person}<br>${x.idea}</div>`).join('');
+bucketList.innerHTML=get('bucket').map((x,i)=>`<div class="card ${x.d?'done':''}"><input type="checkbox" ${x.d?'checked':''} onchange="toggleBucket(${i})"> ${x.t}</div>`).join('');
+}
+render();
+</script>
+</body>
+</html>
